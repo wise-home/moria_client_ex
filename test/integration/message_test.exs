@@ -42,9 +42,39 @@ defmodule Integration.MessageTest do
              %{id: id5, topic_id: ^topic_a_id}
            ] = page.messages
 
+    # create by topic reference as well
+    assert {:ok, page_by_ref} =
+             MoriaClient.create_messages(ctx.client, [
+               %{topic_reference: topic_a.reference, payload: "5", payload_type: "text/plain"},
+               %{topic_reference: topic_b.reference, payload: "bar", payload_type: "text/plain"}
+             ])
+
+    assert length(page_by_ref.messages) == 2
+
+    # grab message ids
+    assert [
+             %{id: id6, topic_id: ^topic_a_id},
+             %{id: _id7, topic_id: ^topic_b_id}
+           ] = page_by_ref.messages
+
+    # mix topic_id and topic_reference in the same request
+    assert {:ok, page_mixed} =
+             MoriaClient.create_messages(ctx.client, [
+               %{topic_id: topic_a.id, payload: "6", payload_type: "text/plain"},
+               %{topic_reference: topic_b.reference, payload: "baz", payload_type: "text/plain"}
+             ])
+
+    assert length(page_mixed.messages) == 2
+
+    # grab message ids from mixed page
+    assert [
+             %{id: id8, topic_id: ^topic_a_id},
+             %{id: _id9, topic_id: ^topic_b_id}
+           ] = page_mixed.messages
+
     # check we can list per topic:
     assert {:ok, topic_b_page} = MoriaClient.list_messages(ctx.client, topic_b.id)
-    assert length(topic_b_page.messages) == 1
+    assert length(topic_b_page.messages) == 3
     assert topic_b_page.topic.id == topic_b.id
 
     # pagination:
@@ -63,17 +93,19 @@ defmodule Integration.MessageTest do
 
     # can stream messages via stream_messages/3
     assert [
-             %{id: ^id1},
-             %{id: ^id2},
-             %{id: ^id3},
-             %{id: ^id5}
+             %{id: ^id1, topic_id: ^topic_a_id},
+             %{id: ^id2, topic_id: ^topic_a_id},
+             %{id: ^id3, topic_id: ^topic_a_id},
+             %{id: ^id5, topic_id: ^topic_a_id},
+             %{id: ^id6, topic_id: ^topic_a_id},
+             %{id: ^id8, topic_id: ^topic_a_id}
            ] =
-             MoriaClient.stream_messages!(ctx.client, topic_a.id, first: 3)
+             MoriaClient.stream_messages!(ctx.client, topic_a.id, first: 10)
              |> Enum.to_list()
 
     # the final message should be on this page
-    assert length(paged_page.messages) == 1
-    assert [id5] == Enum.map(paged_page.messages, & &1.id)
+    assert length(paged_page.messages) == 3
+    assert [id5, id6, id8] == Enum.map(paged_page.messages, & &1.id)
 
     assert {:ok, page} =
              MoriaClient.list_messages(ctx.client, topic_a.id, first: 2, components: %{debug: ""})
