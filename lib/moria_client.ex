@@ -36,10 +36,24 @@ defmodule MoriaClient do
   defdelegate list_topics(client, opts \\ []), to: MoriaClient.Topics
   defdelegate stream_topics!(client, opts \\ []), to: MoriaClient.Topics
   defdelegate get_topic(client, topic_id), to: MoriaClient.Topics
+
+  @deprecated "use list_devices/2 instead"
   defdelegate get_topic_device_summary(client, topic_id, opts \\ []), to: MoriaClient.Topics
+
   defdelegate create_topic(client, params), to: MoriaClient.Topics
   defdelegate update_topic(client, topic_id, params), to: MoriaClient.Topics
   defdelegate delete_topic(client, topic_id), to: MoriaClient.Topics
+
+  ##
+  ## Devices
+  ##
+
+  defdelegate list_devices(client, opts \\ []), to: MoriaClient.Devices
+  defdelegate stream_devices!(client, opts \\ []), to: MoriaClient.Devices
+  defdelegate get_device(client, device_id), to: MoriaClient.Devices
+  defdelegate create_device(client, params), to: MoriaClient.Devices
+  defdelegate update_device(client, device_id, params), to: MoriaClient.Devices
+  defdelegate delete_device(client, device_id), to: MoriaClient.Devices
 
   ##
   ## Encryption Keys
@@ -77,6 +91,15 @@ defmodule MoriaClient do
   ##
   ## Helpers
   ##
+  @doc """
+  Returns a new `MoriaClient` instance configured with the given options.
+
+  Options:
+  - :base_url - The base URL for the Moria API (default: "http://localhost:4000")
+  - :auth - Authentication configuration, e.g., {:bearer, token}
+  - :trace - Enable request/response tracing (default: false)
+  - :adapter - Tesla adapter configuration (default: {Tesla.Adapter.Mint, timeout: 10_000})
+  """
   @spec client(Keyword.t()) :: MoriaClient.t()
   def client(opts \\ []) do
     config = config(opts)
