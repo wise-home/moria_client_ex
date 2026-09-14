@@ -10,11 +10,7 @@ The package can be installed by adding `moria_client` to your list of dependenci
 ```elixir
 def deps do
   [
-    # From hex:
-    {:moria_client, "~> 0.1.0"}
-
-    # Or from github:
-    {:moria_client, git: "https://github.com/wise-home/moria_client_ex.git", branch: "main"},
+    {:moria_client, git: "https://github.com/wise-home/moria_client_ex.git", branch: "main", tag: "v0.35.1"},
   ]
 end
 ```
