@@ -107,12 +107,37 @@ defmodule Integration.MessageTest do
     assert length(paged_page.messages) == 3
     assert [id5, id6, id8] == Enum.map(paged_page.messages, & &1.id)
 
+    # check deprecated components field
     assert {:ok, page} =
              MoriaClient.list_messages(ctx.client, topic_a.id, first: 2, components: %{debug: ""})
 
     assert [
              %{components: %{"debug" => %{"errors" => [], "result" => _}}},
              %{components: %{"debug" => %{"errors" => [], "result" => _}}}
+           ] = page.messages
+
+    # check new-style response field
+    assert {:ok, page} =
+             MoriaClient.list_messages(ctx.client, topic_a.id,
+               first: 2,
+               request: %{
+                 get: %{"debug" => %{"op" => "debug"}}
+               }
+             )
+
+    assert [
+             %{
+               response: %{
+                 "results" => %{"debug" => %{"data" => "1"}},
+                 "errors" => %{}
+               }
+             },
+             %{
+               response: %{
+                 "results" => %{"debug" => %{"data" => "2"}},
+                 "errors" => %{}
+               }
+             }
            ] = page.messages
   end
 end

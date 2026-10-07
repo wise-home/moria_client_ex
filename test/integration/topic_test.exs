@@ -110,11 +110,17 @@ defmodule Integration.TopicTest do
                },
                %{
                  topic_id: topic.id,
-                 payload: JSON.encode!(json),
-                 payload_type: "application/json"
+                 payload_type: "wmbus",
+                 # KAM 12345678:
+                 payload:
+                   "35442D2C7856341233028D20BA80424A2095EFA9766042ECCA96DDE335C9DCF0589FF3F83575C94D09009FD99F582EACFB0E43E577D4",
+                 payload_encoding: "hex"
                }
              ])
 
+    # Wait a bit, because processing devices is async.
+    # I know, but we have no wait to wait on the server for this.
+    Process.sleep(500)
     assert {:ok, device_summary} = MoriaClient.get_topic_device_summary(ctx.client, topic.id)
 
     assert [

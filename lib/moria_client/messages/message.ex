@@ -16,7 +16,10 @@ defmodule MoriaClient.Messages.Message do
     field :payload_type_id, :string
     field :payload_size, :integer
     field :topic_id, :string
+
+    # deprecated, use response instead
     field :components, :map, default: %{}, virtual: false
+    field :response, :map, default: %{}, virtual: false
   end
 
   def changeset(namespace \\ %__MODULE__{}, attrs) do
