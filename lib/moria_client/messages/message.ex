@@ -19,11 +19,13 @@ defmodule MoriaClient.Messages.Message do
 
     # deprecated, use response instead
     field :components, :map, default: %{}, virtual: false
-    field :response, :map, default: %{}, virtual: false
+
+    embeds_one :response, MoriaClient.Messages.ComponentResponse
   end
 
   def changeset(namespace \\ %__MODULE__{}, attrs) do
     namespace
     |> Ecto.Changeset.cast(attrs, __schema__(:fields) -- __schema__(:embeds))
+    |> Ecto.Changeset.cast_embed(:response)
   end
 end

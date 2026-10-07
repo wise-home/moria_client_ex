@@ -127,15 +127,15 @@ defmodule Integration.MessageTest do
 
     assert [
              %{
-               response: %{
-                 "results" => %{"debug" => %{"data" => "1"}},
-                 "errors" => %{}
+               response: %MoriaClient.Messages.ComponentResponse{
+                 results: %{"debug" => %{"data" => "1"}},
+                 errors: %{}
                }
              },
              %{
-               response: %{
-                 "results" => %{"debug" => %{"data" => "2"}},
-                 "errors" => %{}
+               response: %MoriaClient.Messages.ComponentResponse{
+                 results: %{"debug" => %{"data" => "2"}},
+                 errors: %{}
                }
              }
            ] = page.messages
