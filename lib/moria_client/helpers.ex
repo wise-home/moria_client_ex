@@ -20,9 +20,15 @@ defmodule MoriaClient.Helpers do
     Enum.flat_map(value, fn {k, v} -> flatten_query_pairs({"#{key}[#{k}]", v}) end)
   end
 
+  def flatten_query_pairs({key, []}) do
+    # empty list values becomes key[]= because flop handles this on the server side
+    [{"#{key}[]", ""}]
+  end
+
   def flatten_query_pairs({key, value}) when is_list(value) do
-    Enum.flat_map(Enum.with_index(value), fn {v, idx} ->
-      flatten_query_pairs({"#{key}[#{idx}]", v})
+    Enum.flat_map(Enum.with_index(value), fn {item, index} ->
+      suffix = if is_map(item) or is_list(item), do: "[#{index}]", else: "[]"
+      flatten_query_pairs({"#{key}#{suffix}", item})
     end)
   end
 

@@ -3,6 +3,35 @@ defmodule Integration.DeviceTest do
   setup {Integration, :setup_client}
   setup {Integration, :setup_namespace}
 
+  test "list devices with an in filter", ctx do
+    {:ok, namespace_2, _reference_2} = Integration.create_namespace(ctx)
+    {:ok, namespace_3, _reference_3} = Integration.create_namespace(ctx)
+
+    devices =
+      for namespace <- [ctx.namespace, namespace_2, namespace_3] do
+        assert {:ok, device} =
+                 MoriaClient.create_device(ctx.client, %{
+                   namespace_id: namespace.id,
+                   reference: "integration-test-device-#{ctx.machine.id}-#{namespace.id}"
+                 })
+
+        device
+      end
+
+    assert {:ok, page} =
+             MoriaClient.list_devices(ctx.client,
+               first: 10,
+               filters: [
+                 %{field: :namespace_id, op: "in", value: [ctx.namespace.id, namespace_2.id]}
+               ]
+             )
+
+    assert Enum.sort(Enum.map(page.devices, & &1.id)) ==
+             devices |> Enum.take(2) |> Enum.map(& &1.id) |> Enum.sort()
+
+    refute page.page.has_next_page
+  end
+
   test "devices CRUD", ctx do
     reference_1 = "integration-test-device-#{ctx.machine.id}-1"
     reference_2 = "integration-test-device-#{ctx.machine.id}-2"
