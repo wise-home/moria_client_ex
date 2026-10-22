@@ -3,6 +3,28 @@ defmodule Integration.DeviceTest do
   setup {Integration, :setup_client}
   setup {Integration, :setup_namespace}
 
+  test "list devices with page pagination includes the total count", ctx do
+    for index <- 1..2 do
+      assert {:ok, _device} =
+               MoriaClient.create_device(ctx.client, %{
+                 namespace_id: ctx.namespace.id,
+                 reference: "integration-test-device-#{ctx.machine.id}-#{index}"
+               })
+    end
+
+    assert {:ok, page} =
+             MoriaClient.list_devices(ctx.client,
+               page: 1,
+               page_size: 1,
+               filters: [%{field: :namespace_id, value: ctx.namespace.id}]
+             )
+
+    assert [%{namespace_id: namespace_id}] = page.devices
+    assert namespace_id == ctx.namespace.id
+    assert page.page.total_count == 2
+    assert page.page.has_next_page
+  end
+
   test "list devices with an in filter", ctx do
     {:ok, namespace_2, _reference_2} = Integration.create_namespace(ctx)
     {:ok, namespace_3, _reference_3} = Integration.create_namespace(ctx)

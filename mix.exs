@@ -4,7 +4,7 @@ defmodule MoriaClient.MixProject do
   def project do
     [
       app: :moria_client,
-      version: "0.35.1",
+      version: "0.38.5",
       elixir: ">= 1.18.4",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
