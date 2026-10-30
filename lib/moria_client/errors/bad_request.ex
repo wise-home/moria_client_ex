@@ -1,6 +1,11 @@
 defmodule MoriaClient.Errors.BadRequest do
   alias MoriaClient.Common.FieldError
 
+  @type t :: %__MODULE__{
+          details: [FieldError.t()],
+          message: String.t() | nil
+        }
+
   defstruct [:details, :message]
 
   def from_env!(%{status: 400, body: %{"error" => error}}) do

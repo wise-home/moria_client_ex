@@ -3,13 +3,29 @@ defmodule MoriaClient do
   Documentation for `MoriaClient`.
   """
 
+  @typedoc """
+  An API error, a response-validation changeset, or a request-processing error.
+
+  Transport and JSON errors describe the default Mint adapter and JSON middleware.
+  Custom adapters may return additional error types.
+  """
   @type error ::
           MoriaClient.Errors.BadRequest.t()
           | MoriaClient.Errors.Unauthorized.t()
-          | MoriaClient.Errors.Forbidden.t()
           | MoriaClient.Errors.NotFound.t()
           | MoriaClient.Errors.Conflict.t()
           | MoriaClient.Errors.InternalServerError.t()
+          | MoriaClient.Errors.Unprocessable.t()
+          | Ecto.Changeset.t()
+          | Mint.TransportError.t()
+          | Mint.HTTPError.t()
+          | :timeout
+          | :unsupported_scheme
+          | :body_too_large
+          | :unknown
+          | String.t()
+          | {Tesla.Middleware.JSON, :decode, JSON.decode_error_reason()}
+          | {Tesla.Middleware.JSON, :encode | :decode, %Protocol.UndefinedError{}}
 
   @type t :: Tesla.Client.t()
 
@@ -51,8 +67,33 @@ defmodule MoriaClient do
   defdelegate list_devices(client, opts \\ []), to: MoriaClient.Devices
   defdelegate stream_devices!(client, opts \\ []), to: MoriaClient.Devices
   defdelegate get_device(client, device_id), to: MoriaClient.Devices
+
+  @doc """
+  Creates a new device with the given `params`.
+  """
+  @spec create_device(t(), map()) :: {:ok, MoriaClient.Devices.Device.t()} | {:error, error()}
   defdelegate create_device(client, params), to: MoriaClient.Devices
+
+  @doc """
+  Creates or updates a device identified by `namespace_id` and `identification`.
+
+  Both `namespace_id` and `identification` are required in `params`.
+  Missing identity fields result in an API error.
+  """
+  @spec upsert_device(t(), map()) :: {:ok, MoriaClient.Devices.Device.t()} | {:error, error()}
+  defdelegate upsert_device(client, params), to: MoriaClient.Devices
+
+  @doc """
+  Updates the device identified by `device_id` with the given `params`.
+  """
+  @spec update_device(t(), String.t(), map()) ::
+          {:ok, MoriaClient.Devices.Device.t()} | {:error, error()}
   defdelegate update_device(client, device_id, params), to: MoriaClient.Devices
+
+  @doc """
+  Deletes the device identified by `device_id`.
+  """
+  @spec delete_device(t(), String.t()) :: :ok | {:error, error()}
   defdelegate delete_device(client, device_id), to: MoriaClient.Devices
 
   ##

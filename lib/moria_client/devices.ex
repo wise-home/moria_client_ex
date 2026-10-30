@@ -36,6 +36,15 @@ defmodule MoriaClient.Devices do
     end
   end
 
+  def upsert_device(client, params) do
+    url = "/api/v1/devices"
+    req = [method: :patch, url: url, body: %{device: params}]
+
+    with {:ok, env} <- Common.request(client, req, [200]) do
+      Helpers.to_schema(env.body["device"], MoriaClient.Devices.Device)
+    end
+  end
+
   def update_device(client, device_id, params) do
     url = "/api/v1/devices/#{device_id}"
     req = [method: :put, url: url, body: %{device: params}]

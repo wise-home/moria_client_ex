@@ -1,5 +1,8 @@
 defmodule MoriaClient.Errors.Conflict do
   alias MoriaClient.Common.FieldError
+
+  @type t :: %__MODULE__{errors: [FieldError.t()]}
+
   defstruct [:errors]
 
   def from_env!(%{status: 409, body: %{"errors" => errors}}) do
